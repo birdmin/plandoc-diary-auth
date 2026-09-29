@@ -2,12 +2,16 @@
 // 플랜두씨 다이어리 · 카드 1 (계획 세우기)
 // - plans: 현재 최신 상태
 // - plan_history: 수정 "직전" 상태가 버전별로 계속 쌓이는 이력
+//
+// [과제 7 변경점]
+// - supabaseClient를 이 파일에서 새로 만들지 않고, auth.js가 만들어 둔
+//   window.supabaseClient를 그대로 사용한다 (클라이언트를 여러 개
+//   만들면 세션 동기화가 꼬일 수 있어 하나로 통일).
+// - 로그인 전에는 이 화면이 그려지지 않도록, 시작 시 loadPlans()를
+//   바로 부르지 않고 auth.js가 쏘는 "auth-ready" 이벤트를 기다린다.
 // ============================================================
 
-const supabaseClient = window.supabase.createClient(
-  window.SUPABASE_URL,
-  window.SUPABASE_ANON_KEY
-);
+const supabaseClient = window.supabaseClient;
 
 const el = (id) => document.getElementById(id);
 
@@ -238,13 +242,14 @@ form.addEventListener("submit", async (e) => {
 });
 
 async function createPlan(values) {
-  // plans 테이블에 최초 상태로 생성. 이 시점 값은 plans 자체가 최초 기록이므로
-  // plan_history에는 아직 넣지 않는다 (이력은 "수정이 일어날 때" 쌓인다).
+  // plans 테이블에 최초 상태로 생성. user_id는 DB의 default auth.uid()가
+  // 자동으로 채우므로 여기서 따로 넣지 않는다.
   const { data, error } = await supabaseClient.from("plans").insert(values).select().single();
   if (error) throw error;
 
   // 돌아보기에서 아직 다음 계획에 안 붙은 "고칠 점" 메모가 있으면,
   // 가장 최근 것 1건을 이 새 계획에 자동으로 이어붙인다.
+  // (RLS가 이미 "내 것"만 보이게 걸러주므로 별도 필터 불필요)
   const { data: pending, error: pendingErr } = await supabaseClient
     .from("plan_reviews")
     .select("*")
@@ -299,4 +304,20 @@ async function updatePlanWithHistory(planId, newValues) {
 }
 
 // ---------- 시작 ----------
-loadPlans();
+// [과제 7 변경점] 로그인 전에는 데이터를 부르지 않는다.
+// auth.js가 세션 확인을 마치고 로그인된 상태일 때만 "auth-ready"를 쏜다.
+//
+// [버그 수정] auth.js는 스크립트가 로드되자마자 세션 확인을 "비동기로"
+// 시작하는데, app.js가 네트워크로 로딩되는 그 짧은 사이에 확인이 먼저
+// 끝나버려 "auth-ready" 이벤트가 이미 지나가버릴 수 있다. 그러면 아래
+// addEventListener만으로는 이 신호를 영영 못 듣고, "계획" 탭이
+// "불러오는 중…"에서 멈춰버린다 (다른 탭은 이 신호를 안 쓰므로 멀쩡함).
+// → 이벤트를 기다리는 것과 별개로, 지금 이 순간의 세션도 직접 한 번
+//   더 확인해서 두 경로 중 하나라도 맞으면 데이터를 불러오게 한다.
+window.addEventListener("auth-ready", () => {
+  loadPlans();
+});
+
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (session) loadPlans();
+});

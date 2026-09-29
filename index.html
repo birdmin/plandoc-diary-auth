@@ -10,13 +10,71 @@
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="wrap">
+
+  <!-- ===================== 로그인 / 가입 화면 =====================
+       로그인 전 기본 화면. auth.js가 세션을 확인해서, 로그인 상태면
+       이 화면을 숨기고 #app-screen을 보여준다. 반대로 세션이 없으면
+       (또는 로그아웃하면) 이 화면만 보인다. -->
+  <div class="wrap" id="login-screen">
+    <header class="app-header">
+      <h1>플랜두씨 다이어리</h1>
+    </header>
+
+    <div class="notice">
+      <strong>로그인 후에만 내 계획·기록을 볼 수 있습니다.</strong>
+      계정이 없다면 아래에서 먼저 가입해주세요.
+    </div>
+
+    <section class="card">
+      <h2>로그인</h2>
+      <form id="login-form">
+        <div class="form-grid">
+          <div class="field full">
+            <label for="li-email">이메일</label>
+            <input id="li-email" type="email" required />
+          </div>
+          <div class="field full">
+            <label for="li-password">비밀번호</label>
+            <input id="li-password" type="password" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">로그인</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>처음이신가요? 가입하기</h2>
+      <form id="signup-form">
+        <div class="form-grid">
+          <div class="field full">
+            <label for="su-email">이메일</label>
+            <input id="su-email" type="email" required />
+          </div>
+          <div class="field full">
+            <label for="su-password">비밀번호 (6자 이상)</label>
+            <input id="su-password" type="password" minlength="6" required />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-ghost">가입</button>
+        </div>
+      </form>
+    </section>
+
+    <p class="form-status" id="auth-status"></p>
+  </div>
+
+  <!-- ===================== 앱 본문 (로그인 후에만 보임) ===================== -->
+  <div class="wrap" id="app-screen" style="display:none;">
     <header class="app-header">
       <h1>플랜두씨 다이어리</h1>
       <div style="display:flex; align-items:center; gap:12px;">
         <span class="today" id="today-label"></span>
         <button class="btn-ghost btn-small" id="export-btn">전체 자료 내보내기 (JSON)</button>
         <button class="btn-ghost btn-small" id="export-xlsx-btn">엑셀로 내보내기 (XLSX)</button>
+        <button class="btn-ghost btn-small" id="logout-btn">로그아웃</button>
       </div>
     </header>
 
@@ -29,9 +87,8 @@
     </nav>
 
     <div class="notice">
-      <strong>지금은 로그인이 없어 링크를 아는 사람은 누구나 볼 수 있습니다. 남이 봐도 괜찮은 내용만 넣으세요.</strong>
-      계획·할 일을 추가·수정하는 것도 마찬가지로 누구나 할 수 있습니다.
-      로그인으로 잠그는 작업은 아직 구현되지 않았습니다 (다음 과제에서 진행 예정).
+      <strong>로그인한 계정의 자료만 보이고 수정할 수 있습니다.</strong>
+      다른 계정의 계획·할 일·기록은 이 화면에 나타나지 않습니다.
     </div>
 
     <!-- ===================== 탭: 계획 ===================== -->
@@ -220,6 +277,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
+  <script src="auth.js"></script>
   <script src="app.js"></script>
   <script src="todo.js"></script>
   <script src="log.js"></script>
