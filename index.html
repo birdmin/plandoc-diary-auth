@@ -11,10 +11,6 @@
 </head>
 <body>
 
-  <!-- ===================== 로그인 / 가입 화면 =====================
-       로그인 전 기본 화면. auth.js가 세션을 확인해서, 로그인 상태면
-       이 화면을 숨기고 #app-screen을 보여준다. 반대로 세션이 없으면
-       (또는 로그아웃하면) 이 화면만 보인다. -->
   <div class="wrap" id="login-screen">
     <header class="app-header">
       <h1>플랜두씨 다이어리</h1>
@@ -66,7 +62,6 @@
     <p class="form-status" id="auth-status"></p>
   </div>
 
-  <!-- ===================== 앱 본문 (로그인 후에만 보임) ===================== -->
   <div class="wrap" id="app-screen" style="display:none;">
     <header class="app-header">
       <h1>플랜두씨 다이어리</h1>
@@ -75,6 +70,7 @@
         <button class="btn-ghost btn-small" id="export-btn">전체 자료 내보내기 (JSON)</button>
         <button class="btn-ghost btn-small" id="export-xlsx-btn">엑셀로 내보내기 (XLSX)</button>
         <button class="btn-ghost btn-small" id="logout-btn">로그아웃</button>
+        <button class="btn-ghost btn-small" id="delete-account-btn" style="color:#b42318; border-color:#b42318;">회원 탈퇴</button>
       </div>
     </header>
 
@@ -88,10 +84,9 @@
 
     <div class="notice">
       <strong>로그인한 계정의 자료만 보이고 수정할 수 있습니다.</strong>
-      다른 계정의 계획·할 일·기록은 이 화면에 나타나지 않습니다.
+      다른 계정의 계획·할 일·기록은 이 화면에 나타나지 않습니다. 회원 탈퇴 시 이 계정의 모든 자료가 함께 삭제됩니다.
     </div>
 
-    <!-- ===================== 탭: 계획 ===================== -->
     <div class="tab-panel active" id="tab-plan">
       <section class="card">
         <h2 id="form-title">새 계획 추가</h2>
@@ -140,7 +135,6 @@
       </div>
     </div>
 
-    <!-- ===================== 탭: 세부 계획 (할 일) ===================== -->
     <div class="tab-panel" id="tab-todo" hidden>
       <section class="card">
         <h2 id="todo-form-title">새 할 일 추가</h2>
@@ -230,7 +224,6 @@
       </div>
     </div>
 
-    <!-- ===================== 탭: 실행 기록 ===================== -->
     <div class="tab-panel" id="tab-log" hidden>
       <div class="notice" style="background:var(--paper-alt); border-color:var(--line); color:var(--ink-soft);">
         실행 기록은 계획(Plan) 값을 전혀 건드리지 않습니다. 여기서 저장해도 "계획" 탭의 값은 그대로입니다.
@@ -250,7 +243,6 @@
       </div>
     </div>
 
-    <!-- ===================== 탭: 돌아보기 ===================== -->
     <div class="tab-panel" id="tab-review" hidden>
       <div class="notice" style="background:var(--paper-alt); border-color:var(--line); color:var(--ink-soft);">
         계획별로 예상과 실제의 차이를 보여줍니다. 숫자를 누르면 그 숫자가 나온 기록이 아래 펼쳐집니다.
@@ -261,7 +253,6 @@
       </div>
     </div>
 
-    <!-- ===================== 탭: 캘린더 ===================== -->
     <div class="tab-panel" id="tab-calendar" hidden>
       <div class="card">
         <div class="calendar-head">
@@ -278,6 +269,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="auth.js"></script>
+  <script src="delete-account.js"></script>
   <script src="app.js"></script>
   <script src="todo.js"></script>
   <script src="log.js"></script>
@@ -289,7 +281,6 @@
     document.getElementById("today-label").textContent =
       new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" });
 
-    // 탭 전환 (비활성 탭은 무시) + 전환될 때마다 그 탭 데이터 새로고침
     const tabRefresh = {
       plan: () => loadPlans(),
       todo: () => loadTodos(),
